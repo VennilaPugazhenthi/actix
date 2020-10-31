@@ -1,32 +1,21 @@
 use actix_files as fs;
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, App, Error, HttpRequest, HttpServer};
+use std::path::PathBuf;
 
-// #[get("/")]
-// async fn hello() -> impl Responder {
-//     HttpResponse::Ok().body("Hello world!")
-// }
 
-// #[post("/echo")]
-// async fn echo(req_body: String) -> impl Responder {
-//     HttpResponse::Ok().body(req_body)
-// }
-
-// async fn manual_hello() -> impl Responder {
-//     HttpResponse::Ok().body("Hey there!")
-// }
-
+#[get("/")]
+async fn index(_req: HttpRequest) -> Result<fs::NamedFile, Error>{
+    let path:PathBuf = "src/static/index.html".parse().unwrap();
+    Ok(fs::NamedFile::open(path)?)
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
-        App::new()
-            .service(fs::Files::new("/", ".")
-            // .show_files_listing()
-            .index_file("src/static/index.html")
-            )
-
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
+    // HttpServer::new(|| App::new().route("/",web::get().to(index)))
+    HttpServer::new(|| App::new().service(index))
+        .bind("127.0.0.1:8080")?
+        .run()
+        .await
 }
+
+
